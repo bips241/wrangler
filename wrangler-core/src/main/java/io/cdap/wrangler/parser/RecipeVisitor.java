@@ -38,6 +38,8 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
+import io.cdap.wrangler.api.parser.ByteSizeArg;
+import io.cdap.wrangler.api.parser.TimeDurationArg;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -101,43 +103,42 @@ public final class RecipeVisitor extends DirectivesBaseVisitor<RecipeSymbol.Buil
    * A Directive can include properties (which are a collection of key and value pairs),
    * this method extracts that token that is being identified as token of type <code>Properties</code>.
    */
-  @Override
-  public RecipeSymbol.Builder visitPropertyList(DirectivesParser.PropertyListContext ctx) {
-    Map<String, Token> props = new HashMap<>();
-    List<DirectivesParser.PropertyContext> properties = ctx.property();
-    for (DirectivesParser.PropertyContext property : properties) {
-      String identifier = property.Identifier().getText();
-      Token token;
-      if (property.number() != null) {
-        token = new Numeric(new LazyNumber(property.number().getText()));
-      } else if (property.bool() != null) {
-        token = new Bool(Boolean.valueOf(property.bool().getText()));
-      } else {
-        String text = property.text().getText();
-        token = new Text(text.substring(1, text.length() - 1));
-      }
-      props.put(identifier, token);
-    }
-    builder.addToken(new Properties(props));
-    return builder;
-  }
-
-  /**
-   * A Pragma is an instruction to the compiler to dynamically load the directives being specified
-   * from the <code>DirectiveRegistry</code>. These do not affect the data flow.
-   *
-   * <p>E.g. <code>#pragma load-directives test1, test2, test3;</code> will collect the tokens
-   * test1, test2 and test3 as dynamically loadable directives. <p>
-   */
-  @Override
-  public RecipeSymbol.Builder visitPragmaLoadDirective(DirectivesParser.PragmaLoadDirectiveContext ctx) {
-    List<TerminalNode> identifiers = ctx.identifierList().Identifier();
-    for (TerminalNode identifier : identifiers) {
-      builder.addLoadableDirective(identifier.getText());
-    }
-    return builder;
-  }
-
+ 
+   @Override
+   public RecipeSymbol.Builder visitPropertyList(DirectivesParser.PropertyListContext ctx) {
+       Map<String, Token> props = new HashMap<>();
+       List<DirectivesParser.PropertyContext> properties = ctx.property();
+   
+       for (DirectivesParser.PropertyContext property : properties) {
+           String identifier = property.Identifier().getText();
+           Token token;
+   
+           DirectivesParser.ValueContext value = property.value();
+   
+           if (value.number() != null) {
+               token = new Numeric(new LazyNumber(value.number().getText()));
+           } else if (value.bool() != null) {
+               token = new Bool(Boolean.valueOf(value.bool().getText()));
+           } else if (value.text() != null) {
+               String text = value.text().getText();
+               token = new Text(text.substring(1, text.length() - 1));
+           } else if (value.byteSize() != null) {
+               String byteSizeText = value.byteSize().getText();
+               token = new ByteSizeArg(byteSizeText);
+           } else if (value.timeDuration() != null) {
+               String durationText = value.timeDuration().getText();
+               token = new TimeDurationArg(durationText);
+           } else {
+               throw new IllegalArgumentException("Unsupported property type");
+           }
+   
+           props.put(identifier, token);
+       }
+   
+       builder.addToken(new Properties(props));
+       return builder;
+   }
+   
   /**
    * A Pragma version is a informational directive to notify compiler about the grammar that is should
    * be using to parse the directives below.

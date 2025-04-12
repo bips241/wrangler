@@ -127,9 +127,9 @@ propertyList
  : property (',' property)*
  ;
 
-property
- : Identifier '=' ( text | number | bool )
- ;
+property : Identifier '=' value;
+
+value    : text | number | bool | byteSize | timeDuration;
 
 numberRanges
  : numberRange ( ',' numberRange)*
@@ -139,9 +139,13 @@ numberRange
  : Number ':' Number '=' value
  ;
 
-value
- : String | Number | Column | Bool
- ;
+ byteSize
+  : BYTE_SIZE
+  ;
+
+timeDuration
+  : TIME_DURATION
+  ;
 
 ecommand
  : '!' Identifier
@@ -311,3 +315,19 @@ fragment Int
 fragment Digit
  : [0-9]
  ;
+
+BYTE_SIZE
+  : Int BYTE_UNIT
+  ;
+
+TIME_DURATION
+  : Int TIME_UNIT
+  ;
+
+fragment BYTE_UNIT
+  : [kKmMgGtTpPeE]? 'B'
+  ;
+
+fragment TIME_UNIT
+  : 'ms' | 's' | 'sec' | 'm' | 'min' | 'h' | 'd'
+  ;

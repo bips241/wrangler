@@ -164,6 +164,10 @@ These directives are currently available:
 | [JSON](wrangler-docs/functions/json-functions.md)                               | Functions that can be useful in transforming your data           |
 | [Types](wrangler-docs/functions/type-functions.md)                              | Functions for detecting the type of data                         |
 
+### aggregate
+::contentReference[oaicite:0]{index=0}
+ 
+
 ## Performance
 
 Initial performance tests show that with a set of directives of high complexity for

@@ -129,7 +129,7 @@ propertyList
 
 property : Identifier '=' value;
 
-value    : text | number | bool | byteSize | timeDuration;
+value    : BYTE_SIZE  | TIME_DURATION | text | number | bool | byteSize | timeDuration;
 
 numberRanges
  : numberRange ( ',' numberRange)*
@@ -316,13 +316,9 @@ fragment Digit
  : [0-9]
  ;
 
-BYTE_SIZE
-  : Int BYTE_UNIT
-  ;
+BYTE_SIZE: [0-9]+ ('.' [0-9]+)? BYTE_UNIT;
 
-TIME_DURATION
-  : Int TIME_UNIT
-  ;
+TIME_DURATION: [0-9]+ ('.' [0-9]+)? TIME_UNIT;
 
 fragment BYTE_UNIT
   : [kKmMgGtTpPeE]? 'B'
